@@ -4,7 +4,7 @@
 
     <groupId>sumo-logback-appender</groupId>
     <artifactId>sumo-logback-appender</artifactId>
-    <version>1.0.2-SNAPSHOT</version>
+    <version>1.0.3-SNAPSHOT</version>
     <build>
         <plugins>
             <plugin>
