@@ -23,7 +23,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.sumologic.log4j.queue;
+package com.sumologic.logback.queue;
 
 import org.junit.Test;
 
@@ -32,7 +32,7 @@ import java.util.List;
 
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertEquals;
-import static com.sumologic.log4j.queue.CostBoundedConcurrentQueue.CostAssigner;
+import static com.sumologic.logback.queue.CostBoundedConcurrentQueue.CostAssigner;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 

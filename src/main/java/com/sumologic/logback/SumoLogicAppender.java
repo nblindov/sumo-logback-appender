@@ -23,8 +23,12 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.sumologic.log4j.http;
+package com.sumologic.logback;
 
+import ch.qos.logback.classic.spi.ILoggingEvent;
+import ch.qos.logback.classic.spi.IThrowableProxy;
+import ch.qos.logback.core.AppenderBase;
+import ch.qos.logback.core.Layout;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPost;
@@ -36,26 +40,23 @@ import org.apache.http.params.HttpConnectionParams;
 import org.apache.http.params.HttpParams;
 import org.apache.http.protocol.HTTP;
 import org.apache.http.util.EntityUtils;
-import org.apache.log4j.helpers.LogLog;
 
 import java.io.IOException;
 
 /**
- * @author: Jose Muniz (jose@sumologic.com)
+ * Appender that sends log messages to Sumo Logic.
+ *
+ * @author Stefan Zier (stefan@sumologic.com)
+ * @author Scott Bessler (scott@relateiq.com) adapted log4j appender for logback
  */
-public class SumoHttpSender {
+public class SumoLogicAppender extends AppenderBase<ILoggingEvent> {
+    private Layout<ILoggingEvent> layout;
 
-    private long retryInterval = 10000L;
-
-    private volatile String url = null;
+    private String url = null;
     private int connectionTimeout = 1000;
     private int socketTimeout = 60000;
-    private volatile HttpClient httpClient = null;
 
-
-    public void setRetryInterval(long retryInterval) {
-        this.retryInterval = retryInterval;
-    }
+    private HttpClient httpClient = null;
 
     public void setUrl(String url) {
         this.url = url;
@@ -69,69 +70,73 @@ public class SumoHttpSender {
         this.socketTimeout = socketTimeout;
     }
 
-    public boolean isInitialized() {
-        return httpClient != null;
-    }
-
-    public void init() {
+    @Override
+    public void start() {
+        super.start();
         HttpParams params = new BasicHttpParams();
         HttpConnectionParams.setConnectionTimeout(params, connectionTimeout);
         HttpConnectionParams.setSoTimeout(params, socketTimeout);
         httpClient = new DefaultHttpClient(new ThreadSafeClientConnManager(), params);
     }
 
-    public void close() {
+    @Override
+    protected void append(ILoggingEvent event) {
+        if (!checkEntryConditions()) {
+            return;
+        }
+
+        StringBuilder builder = new StringBuilder(1024);
+        builder.append(layout.doLayout(event));
+
+        // Append stack trace if present
+        IThrowableProxy error = event.getThrowableProxy();
+        if (error != null) {
+//            formattedEvent += ExceptionFormatter.formatException(error);
+        }
+
+        sendToSumo(builder.toString());
+    }
+
+    @Override
+    public void stop() {
+        super.stop();
         httpClient.getConnectionManager().shutdown();
         httpClient = null;
     }
 
-    public void send(String body, String name) {
-        keepTrying(body, name);
+    // Private bits.
+
+    private boolean checkEntryConditions() {
+        if (httpClient == null) {
+            LogLog.warn("HttpClient not initialized.");
+            return false;
+        }
+
+        return true;
     }
 
-    private void keepTrying(String body, String name) {
-        boolean success = false;
-        do {
-            try {
-                trySend(body, name);
-                success = true;
-            } catch (Exception e) {
-                try {
-                    Thread.sleep(retryInterval);
-                } catch (InterruptedException e1) {
-                    break;
-                }
-            }
-        } while (!success && ! Thread.currentThread().isInterrupted() );
-    }
-
-    private void trySend(String body, String name) throws IOException {
+    private void sendToSumo(String log) {
         HttpPost post = null;
         try {
-            if (url == null)
-                throw new IOException("Unknown endpoint");
-
             post = new HttpPost(url);
-            post.setHeader("X-Sumo-Name", name);
-            post.setEntity(new StringEntity(body, HTTP.PLAIN_TEXT_TYPE, HTTP.UTF_8));
+            post.setEntity(new StringEntity(log, HTTP.PLAIN_TEXT_TYPE, HTTP.UTF_8));
             HttpResponse response = httpClient.execute(post);
             int statusCode = response.getStatusLine().getStatusCode();
             if (statusCode != 200) {
                 LogLog.warn(String.format("Received HTTP error from Sumo Service: %d", statusCode));
-                // Not success. Only retry if status is unavailable.
-                if (statusCode == 503) {
-                    throw new IOException("Server unavailable");
-                }
             }
             //need to consume the body if you want to re-use the connection.
-            LogLog.debug("Successfully sent log request to Sumo Logic");
             EntityUtils.consume(response.getEntity());
         } catch (IOException e) {
-            LogLog.warn("Could not send log to Sumo Logic");
-            LogLog.debug("Reason:", e);
-            try { post.abort(); } catch (Exception ignore) {}
-            throw e;
+            LogLog.warn("Could not send log to Sumo Logic", e);
+            try {
+                post.abort();
+            } catch (Exception ignore) {
+            }
         }
     }
 
+    public void setLayout(Layout<ILoggingEvent> layout) {
+        this.layout = layout;
+    }
 }

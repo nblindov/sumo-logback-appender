@@ -23,39 +23,38 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.sumologic.log4j.queue;
+package com.sumologic.logback;
 
-import java.util.Collection;
+import java.io.IOException;
 
 /**
- * A concurrent buffer with a maximum capacity that, upon reaching said capacity, evicts some
- * element in the queue to ensure the new element can fit.
- *
- * @author: Jose Muniz (jose@sumologic.com)
- * Date: 4/5/13
- * Time: 1:51 AM
+ * Created by mbessler on 8/14/15.
  */
-public abstract class BufferWithEviction<Q> {
+public class LogLog {
 
-    private long capacity;
+    public static void debug(String msg) {
 
-    public BufferWithEviction(long capacity) {
-        this.capacity = capacity;
     }
 
-    public long getCapacity() {
-        return capacity;
+    public static void info(String msg) {
+
     }
 
-    public void setCapacity(long capacity) {
-        this.capacity = capacity;
+    public static void warn(String s, Exception e) {
     }
 
+    public static void warn(String s) {
+    }
 
-    protected abstract Q evict();
-    protected abstract boolean evict(long cost);
-    public abstract int size();
-    public abstract int drainTo(Collection<Q> collection);
-    public abstract boolean add(Q element);
+    public static void error(String s, Exception e) {
 
+    }
+
+    public static void error(String s) {
+
+    }
+
+    public static void debug(String s, IOException e) {
+
+    }
 }

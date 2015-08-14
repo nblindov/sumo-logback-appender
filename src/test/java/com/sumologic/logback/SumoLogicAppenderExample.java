@@ -23,10 +23,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.sumologic.log4j;
-
-import org.apache.log4j.Logger;
-import org.apache.log4j.helpers.LogLog;
+package com.sumologic.logback;
 
 /**
  * Simple example on using the Sumo Logic Log4J appender.
@@ -34,19 +31,19 @@ import org.apache.log4j.helpers.LogLog;
  * @author Stefan Zier (stefan@sumologic.com)
  */
 public class SumoLogicAppenderExample {
-  private static Logger logger = Logger.getLogger(SumoLogicAppenderExample.class);
-
-  public static void main(String[] args) throws InterruptedException {
-      LogLog.setInternalDebugging(true);
-
-
-      for (int i = 0; i < 50; i++) {
-
-          for (int j = 0; j < 500; j++)
-            logger.error("Greetings from the SumoLogicAppender!");
-
-          logger.error("Multiline message", new RuntimeException());
-          Thread.sleep(100);
-      }
-  }
+//  private static Logger logger = Logger.getLogger(SumoLogicAppenderExample.class);
+//
+//  public static void main(String[] args) throws InterruptedException {
+//      LogLog.setInternalDebugging(true);
+//
+//
+//      for (int i = 0; i < 50; i++) {
+//
+//          for (int j = 0; j < 500; j++)
+//            logger.error("Greetings from the SumoLogicAppender!");
+//
+//          logger.error("Multiline message", new RuntimeException());
+//          Thread.sleep(100);
+//      }
+//  }
 }

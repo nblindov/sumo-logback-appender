@@ -24,24 +24,27 @@
  * under the License.
  */
 
-package com.sumologic.log4j;
+package com.sumologic.logback;
 
-import com.sumologic.log4j.aggregation.SumoBufferFlusher;
-import com.sumologic.log4j.http.SumoHttpSender;
-import com.sumologic.log4j.queue.BufferWithEviction;
-import com.sumologic.log4j.queue.BufferWithFifoEviction;
-import org.apache.log4j.AppenderSkeleton;
-import org.apache.log4j.Layout;
-import org.apache.log4j.helpers.LogLog;
-import org.apache.log4j.spi.LoggingEvent;
-import static com.sumologic.log4j.queue.CostBoundedConcurrentQueue.CostAssigner;
+import ch.qos.logback.classic.spi.ILoggingEvent;
+import ch.qos.logback.classic.spi.IThrowableProxy;
+import ch.qos.logback.core.AppenderBase;
+import ch.qos.logback.core.Layout;
+import com.sumologic.logback.aggregation.SumoBufferFlusher;
+import com.sumologic.logback.http.SumoHttpSender;
+import com.sumologic.logback.queue.BufferWithEviction;
+import com.sumologic.logback.queue.BufferWithFifoEviction;
+
+import static com.sumologic.logback.queue.CostBoundedConcurrentQueue.CostAssigner;
+
 
 /**
  * Appender that sends log messages to Sumo Logic.
  *
  * @author Jose Muniz (jose@sumologic.com)
  */
-public class BufferedSumoLogicAppender extends AppenderSkeleton {
+public class BufferedSumoLogicAppender extends AppenderBase<ILoggingEvent> {
+    private Layout<ILoggingEvent> layout;
 
     private String url = null;
     private int connectionTimeout = 1000;
@@ -51,7 +54,7 @@ public class BufferedSumoLogicAppender extends AppenderSkeleton {
     private long messagesPerRequest = 100;    // How many messages need to be in the queue before we flush
     private long maxFlushInterval = 10000;    // Maximum interval between flushes (ms)
     private long flushingAccuracy = 250;      // How often the flushed thread looks into the message queue (ms)
-    private String sourceName = "Log4J-SumoObject"; // Name to stamp for querying with _sourceName
+    private String sourceName = "sumo-logback-appender"; // Name to stamp for querying with _sourceName
 
     private long maxQueueSizeBytes = 1000000;
 
@@ -99,7 +102,8 @@ public class BufferedSumoLogicAppender extends AppenderSkeleton {
     }
 
     @Override
-    public void activateOptions() {
+    public void start() {
+        super.start();
         LogLog.debug("Activating options");
 
         /* Initialize queue */
@@ -142,22 +146,19 @@ public class BufferedSumoLogicAppender extends AppenderSkeleton {
     }
 
     @Override
-    protected void append(LoggingEvent event) {
+    protected void append(ILoggingEvent event) {
         if (!checkEntryConditions()) {
             LogLog.warn("Appender not initialized. Dropping log entry");
             return;
         }
 
         StringBuilder builder = new StringBuilder(1024);
-        builder.append(layout.format(event));
-        if (layout.ignoresThrowable()) {
-            String[] throwableStrRep = event.getThrowableStrRep();
-            if (throwableStrRep != null) {
-                for (String line : throwableStrRep) {
-                    builder.append(line);
-                    builder.append(Layout.LINE_SEP);
-                }
-            }
+        builder.append(layout.doLayout(event));
+
+        // Append stack trace if present
+        IThrowableProxy error = event.getThrowableProxy();
+        if (error != null) {
+//            formattedEvent += ExceptionFormatter.formatException(error);
         }
 
         try {
@@ -168,17 +169,13 @@ public class BufferedSumoLogicAppender extends AppenderSkeleton {
     }
 
     @Override
-    public void close() {
+    public void stop() {
+        super.stop();
         sender.close();
         sender = null;
 
         flusher.stop();
         flusher = null;
-    }
-
-    @Override
-    public boolean requiresLayout() {
-        return true;
     }
 
     // Private bits.
@@ -187,4 +184,7 @@ public class BufferedSumoLogicAppender extends AppenderSkeleton {
         return sender != null && sender.isInitialized();
     }
 
+    public void setLayout(Layout<ILoggingEvent> layout) {
+        this.layout = layout;
+    }
 }

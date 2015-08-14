@@ -23,9 +23,8 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.sumologic.log4j.server;
+package com.sumologic.logback.server;
 
-import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
 

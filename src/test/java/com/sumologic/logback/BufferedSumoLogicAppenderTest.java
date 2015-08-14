@@ -23,19 +23,20 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.sumologic.log4j;
+package com.sumologic.logback;
 
-import com.sumologic.log4j.server.AggregatingHttpHandler;
-import com.sumologic.log4j.server.MaterializedHttpRequest;
-import com.sumologic.log4j.server.MockHttpServer;
-import org.apache.log4j.Logger;
-import org.apache.log4j.PatternLayout;
-import org.apache.log4j.helpers.LogLog;
+import ch.qos.logback.classic.Logger;
+import ch.qos.logback.classic.LoggerContext;
+import ch.qos.logback.classic.PatternLayout;
+import com.sumologic.logback.server.AggregatingHttpHandler;
+import com.sumologic.logback.server.MaterializedHttpRequest;
+import com.sumologic.logback.server.MockHttpServer;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.slf4j.LoggerFactory;
 
-import static org.junit.Assert.*;
+import static junit.framework.Assert.assertEquals;
 
 /**
  * @author: Jose Muniz (jose@sumologic.com)
@@ -52,14 +53,12 @@ public class BufferedSumoLogicAppenderTest {
 
 
     private void setUpLogger(BufferedSumoLogicAppender appender) {
-        loggerInTest = Logger.getLogger("BufferedSumoLogicAppenderTest");
+        loggerInTest = (Logger) LoggerFactory.getLogger("BufferedSumoLogicAppenderTest");
+        loggerInTest.detachAndStopAllAppenders();
         loggerInTest.addAppender(appender);
-        loggerInTest.setAdditivity(false);
-
     }
 
     private void setUpLogger(int batchSize, int windowSize, int precision) {
-        LogLog.setInternalDebugging(true);
 
         appender = new BufferedSumoLogicAppender();
         appender.setUrl(ENDPOINT_URL);
@@ -67,9 +66,15 @@ public class BufferedSumoLogicAppenderTest {
         appender.setMaxFlushInterval(windowSize);
         appender.setFlushingAccuracy(precision);
 
-        // TODO: Shouldn't there be a default layout?
-        appender.setLayout(new PatternLayout("%m%n"));
-        appender.activateOptions();
+        LoggerContext context = (LoggerContext) LoggerFactory.getILoggerFactory();
+
+        PatternLayout layout = new PatternLayout();
+        layout.setContext(context);
+        layout.setPattern("%message%n");
+        layout.start();
+
+        appender.setLayout(layout);
+        appender.start();
 
         setUpLogger(appender);
     }
@@ -86,7 +91,7 @@ public class BufferedSumoLogicAppenderTest {
     @After
     public void tearDown() throws Exception {
         if (loggerInTest != null)
-            loggerInTest.removeAllAppenders();
+            loggerInTest.detachAndStopAllAppenders();
         if (server != null)
             server.stop();
     }
@@ -98,8 +103,8 @@ public class BufferedSumoLogicAppenderTest {
         loggerInTest.info("This is a message");
 
         Thread.sleep(100);
-        assertEquals(handler.getExchanges().size(), 1);
-        assertEquals(handler.getExchanges().get(0).getBody(), "This is a message\n");
+        assertEquals(1, handler.getExchanges().size());
+        assertEquals("This is a message\n", handler.getExchanges().get(0).getBody());
     }
 
     @Test
@@ -165,7 +170,7 @@ public class BufferedSumoLogicAppenderTest {
     // Start with an appender without its URL set. THEN set the property and
     // make sure everything's still there.
     public void testNoUrlSetInitially() throws Exception {
-        LogLog.setInternalDebugging(true);
+//        LogLog.setInternalDebugging(true);
 
         appender = new BufferedSumoLogicAppender();
         appender.setMessagesPerRequest(1000);
@@ -173,9 +178,16 @@ public class BufferedSumoLogicAppenderTest {
         appender.setFlushingAccuracy(1);
         appender.setRetryInterval(1);
 
-        // TODO: Shouldn't there be a default layout?
-        appender.setLayout(new PatternLayout("%m%n"));
-        appender.activateOptions();
+
+        LoggerContext context = (LoggerContext) LoggerFactory.getILoggerFactory();
+
+        PatternLayout layout = new PatternLayout();
+        layout.setContext(context);
+        layout.setPattern("-- %message%n");
+        layout.start();
+
+        appender.setLayout(layout);
+        appender.start();
 
         setUpLogger(appender);
 
@@ -186,7 +198,7 @@ public class BufferedSumoLogicAppenderTest {
 
 
         appender.setUrl(ENDPOINT_URL);
-        appender.activateOptions();
+        appender.start();
 
         Thread.sleep(1000);
         assertEquals(1, handler.getExchanges().size());

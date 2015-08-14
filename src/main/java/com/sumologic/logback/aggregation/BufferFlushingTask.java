@@ -23,13 +23,12 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.sumologic.log4j.aggregation;
+package com.sumologic.logback.aggregation;
 
-import com.sumologic.log4j.queue.BufferWithEviction;
-import org.apache.log4j.helpers.LogLog;
+import com.sumologic.logback.LogLog;
+import com.sumologic.logback.queue.BufferWithEviction;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 /**

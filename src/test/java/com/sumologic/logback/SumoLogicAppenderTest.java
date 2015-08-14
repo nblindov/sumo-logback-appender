@@ -23,17 +23,19 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.sumologic.log4j;
+package com.sumologic.logback;
 
-
-import com.sumologic.log4j.server.AggregatingHttpHandler;
-import com.sumologic.log4j.server.MockHttpServer;
-import org.apache.log4j.Logger;
-import org.apache.log4j.PatternLayout;
+import ch.qos.logback.classic.Logger;
+import ch.qos.logback.classic.LoggerContext;
+import ch.qos.logback.classic.PatternLayout;
+import com.sumologic.logback.server.AggregatingHttpHandler;
+import com.sumologic.logback.server.MockHttpServer;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import static org.junit.Assert.*;
+import org.slf4j.LoggerFactory;
+
+import static junit.framework.Assert.assertEquals;
 
 public class SumoLogicAppenderTest {
 
@@ -46,15 +48,21 @@ public class SumoLogicAppenderTest {
 
 
     private void setUpLogger() {
+        LoggerContext context = (LoggerContext) LoggerFactory.getILoggerFactory();
+
         SumoLogicAppender sla = new SumoLogicAppender();
         sla.setUrl(ENDPOINT_URL);
         // TODO: Shouldn't there be a default layout?
-        sla.setLayout(new PatternLayout("-- %m%n"));
-        sla.activateOptions();
+        PatternLayout layout = new PatternLayout();
+        layout.setContext(context);
+        layout.setPattern("-- %message%n");
+        layout.start();
+        sla.setLayout(layout);
+        sla.start();
 
-        loggerInTest = Logger.getLogger("TestSingleMessage");
+        loggerInTest = (Logger) LoggerFactory.getLogger("logger");
+        loggerInTest.detachAndStopAllAppenders();
         loggerInTest.addAppender(sla);
-        loggerInTest.setAdditivity(false);
 
     }
 
@@ -72,7 +80,6 @@ public class SumoLogicAppenderTest {
     @After
     public void tearDown() throws Exception {
         server.stop();
-        loggerInTest.removeAllAppenders();
     }
 
     @Test
@@ -80,8 +87,8 @@ public class SumoLogicAppenderTest {
 
         loggerInTest.info("This is a message");
 
-        assertEquals(handler.getExchanges().size(), 1);
-        assertEquals(handler.getExchanges().get(0).getBody(), "-- This is a message\n");
+        assertEquals(1, handler.getExchanges().size());
+        assertEquals("-- This is a message\n", handler.getExchanges().get(0).getBody());
     }
 
     @Test
@@ -93,6 +100,6 @@ public class SumoLogicAppenderTest {
             loggerInTest.error("error " + i);
         }
 
-        assertEquals(handler.getExchanges().size(), numMessages);
+        assertEquals(numMessages, handler.getExchanges().size());
     }
 }

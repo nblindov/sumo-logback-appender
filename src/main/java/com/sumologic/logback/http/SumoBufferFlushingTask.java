@@ -23,11 +23,11 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.sumologic.log4j.http;
+package com.sumologic.logback.http;
 
-import com.sumologic.log4j.aggregation.BufferFlushingTask;
-import com.sumologic.log4j.queue.BufferWithEviction;
-import org.apache.log4j.helpers.LogLog;
+import com.sumologic.logback.LogLog;
+import com.sumologic.logback.aggregation.BufferFlushingTask;
+import com.sumologic.logback.queue.BufferWithEviction;
 
 import java.util.List;
 
@@ -79,7 +79,7 @@ public class SumoBufferFlushingTask extends BufferFlushingTask<String, String> {
     @Override
     protected String aggregate(List<String> messages) {
         StringBuilder builder = new StringBuilder(messages.size() * 10);
-        for (String message: messages) {
+        for (String message : messages) {
             builder.append(message);
         }
         return builder.toString();

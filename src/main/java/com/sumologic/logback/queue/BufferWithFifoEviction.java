@@ -23,16 +23,19 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.sumologic.log4j.queue;
+package com.sumologic.logback.queue;
 
-import org.apache.log4j.helpers.LogLog;
+
+import com.sumologic.logback.LogLog;
 
 import java.util.Collection;
-import static com.sumologic.log4j.queue.CostBoundedConcurrentQueue.CostAssigner;
+
+import static com.sumologic.logback.queue.CostBoundedConcurrentQueue.CostAssigner;
+
 /**
  * Buffer for one concurrent producer and one concurrent consumer which takes members of
  * the queue in batches.
- *
+ * <p>
  * Author: Jose Muniz (jose@sumologic.com)
  * Date: 4/6/13
  * Time: 3:29 PM
@@ -62,6 +65,7 @@ public class BufferWithFifoEviction<T> extends BufferWithEviction<T> {
 
     /**
      * Make room for inserting an element with cost <tt>cost</tt>
+     *
      * @param cost the desired cost to evict
      * @return true if eviction was successful, false otherwise.
      */
@@ -98,7 +102,7 @@ public class BufferWithFifoEviction<T> extends BufferWithEviction<T> {
     @Override
     synchronized public boolean add(T element) {
         boolean wasSuccessful = queue.offer(element);
-        if (! wasSuccessful) {
+        if (!wasSuccessful) {
             evict(costAssigner.cost(element));
             return queue.offer(element);
         }

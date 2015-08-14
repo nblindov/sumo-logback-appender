@@ -23,11 +23,11 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.sumologic.log4j.aggregation;
+package com.sumologic.logback.aggregation;
 
-import com.sumologic.log4j.http.SumoBufferFlushingTask;
-import com.sumologic.log4j.http.SumoHttpSender;
-import com.sumologic.log4j.queue.BufferWithEviction;
+import com.sumologic.logback.http.SumoBufferFlushingTask;
+import com.sumologic.logback.http.SumoHttpSender;
+import com.sumologic.logback.queue.BufferWithEviction;
 
 import java.util.concurrent.*;
 

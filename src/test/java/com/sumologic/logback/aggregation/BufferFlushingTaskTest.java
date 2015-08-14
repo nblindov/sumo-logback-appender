@@ -23,10 +23,10 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.sumologic.log4j.aggregation;
+package com.sumologic.logback.aggregation;
 
-import com.sumologic.log4j.queue.BufferWithFifoEviction;
-import com.sumologic.log4j.queue.CostBoundedConcurrentQueue;
+import com.sumologic.logback.queue.BufferWithFifoEviction;
+import com.sumologic.logback.queue.CostBoundedConcurrentQueue;
 import org.junit.Test;
 
 import java.util.ArrayList;

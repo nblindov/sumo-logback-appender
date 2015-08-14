@@ -23,7 +23,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package com.sumologic.log4j.queue;
+package com.sumologic.logback.queue;
 
 import java.util.Collection;
 import java.util.concurrent.LinkedBlockingQueue;
