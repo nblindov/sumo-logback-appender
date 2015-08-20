@@ -25,10 +25,8 @@
  */
 package com.sumologic.logback;
 
-import ch.qos.logback.classic.spi.ILoggingEvent;
-import ch.qos.logback.classic.spi.IThrowableProxy;
-import ch.qos.logback.core.AppenderBase;
-import ch.qos.logback.core.Layout;
+import java.io.IOException;
+
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPost;
@@ -41,7 +39,11 @@ import org.apache.http.params.HttpParams;
 import org.apache.http.protocol.HTTP;
 import org.apache.http.util.EntityUtils;
 
-import java.io.IOException;
+import ch.qos.logback.classic.spi.ILoggingEvent;
+import ch.qos.logback.classic.spi.IThrowableProxy;
+import ch.qos.logback.core.AppenderBase;
+import ch.qos.logback.core.Layout;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Appender that sends log messages to Sumo Logic.
@@ -49,6 +51,7 @@ import java.io.IOException;
  * @author Stefan Zier (stefan@sumologic.com)
  * @author Scott Bessler (scott@relateiq.com) adapted log4j appender for logback
  */
+@Slf4j
 public class SumoLogicAppender extends AppenderBase<ILoggingEvent> {
     private Layout<ILoggingEvent> layout;
 
@@ -108,27 +111,27 @@ public class SumoLogicAppender extends AppenderBase<ILoggingEvent> {
 
     private boolean checkEntryConditions() {
         if (httpClient == null) {
-            LogLog.warn("HttpClient not initialized.");
+            log.warn("HttpClient not initialized.");
             return false;
         }
 
         return true;
     }
 
-    private void sendToSumo(String log) {
+    private void sendToSumo(String data) {
         HttpPost post = null;
         try {
             post = new HttpPost(url);
-            post.setEntity(new StringEntity(log, HTTP.PLAIN_TEXT_TYPE, HTTP.UTF_8));
+            post.setEntity(new StringEntity(data, HTTP.PLAIN_TEXT_TYPE, HTTP.UTF_8));
             HttpResponse response = httpClient.execute(post);
             int statusCode = response.getStatusLine().getStatusCode();
             if (statusCode != 200) {
-                LogLog.warn(String.format("Received HTTP error from Sumo Service: %d", statusCode));
+                log.warn("Received HTTP error from Sumo Service: {}", statusCode);
             }
             //need to consume the body if you want to re-use the connection.
             EntityUtils.consume(response.getEntity());
         } catch (IOException e) {
-            LogLog.warn("Could not send log to Sumo Logic", e);
+            log.warn("Could not send log to Sumo Logic", e);
             try {
                 post.abort();
             } catch (Exception ignore) {

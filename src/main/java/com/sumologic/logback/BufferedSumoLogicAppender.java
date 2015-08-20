@@ -26,14 +26,16 @@
 
 package com.sumologic.logback;
 
-import ch.qos.logback.classic.spi.ILoggingEvent;
-import ch.qos.logback.classic.spi.IThrowableProxy;
-import ch.qos.logback.core.AppenderBase;
-import ch.qos.logback.core.Layout;
 import com.sumologic.logback.aggregation.SumoBufferFlusher;
 import com.sumologic.logback.http.SumoHttpSender;
 import com.sumologic.logback.queue.BufferWithEviction;
 import com.sumologic.logback.queue.BufferWithFifoEviction;
+
+import ch.qos.logback.classic.spi.ILoggingEvent;
+import ch.qos.logback.classic.spi.IThrowableProxy;
+import ch.qos.logback.core.AppenderBase;
+import ch.qos.logback.core.Layout;
+import lombok.extern.slf4j.Slf4j;
 
 import static com.sumologic.logback.queue.CostBoundedConcurrentQueue.CostAssigner;
 
@@ -43,6 +45,7 @@ import static com.sumologic.logback.queue.CostBoundedConcurrentQueue.CostAssigne
  *
  * @author Jose Muniz (jose@sumologic.com)
  */
+@Slf4j
 public class BufferedSumoLogicAppender extends AppenderBase<ILoggingEvent> {
     private Layout<ILoggingEvent> layout;
 
@@ -104,7 +107,7 @@ public class BufferedSumoLogicAppender extends AppenderBase<ILoggingEvent> {
     @Override
     public void start() {
         super.start();
-        LogLog.debug("Activating options");
+        log.debug("Activating options");
 
         /* Initialize queue */
         if (queue == null) {
@@ -148,7 +151,7 @@ public class BufferedSumoLogicAppender extends AppenderBase<ILoggingEvent> {
     @Override
     protected void append(ILoggingEvent event) {
         if (!checkEntryConditions()) {
-            LogLog.warn("Appender not initialized. Dropping log entry");
+            log.warn("Appender not initialized. Dropping log entry");
             return;
         }
 
@@ -164,7 +167,7 @@ public class BufferedSumoLogicAppender extends AppenderBase<ILoggingEvent> {
         try {
             queue.add(builder.toString());
         } catch (Exception e) {
-            LogLog.error("Unable to insert log entry into log queue. ", e);
+            log.error("Unable to insert log entry into log queue. ", e);
         }
     }
 

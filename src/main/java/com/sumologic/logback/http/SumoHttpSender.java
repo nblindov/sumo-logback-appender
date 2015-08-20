@@ -25,7 +25,8 @@
  */
 package com.sumologic.logback.http;
 
-import com.sumologic.logback.LogLog;
+import java.io.IOException;
+
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPost;
@@ -38,11 +39,12 @@ import org.apache.http.params.HttpParams;
 import org.apache.http.protocol.HTTP;
 import org.apache.http.util.EntityUtils;
 
-import java.io.IOException;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * @author: Jose Muniz (jose@sumologic.com)
  */
+@Slf4j
 public class SumoHttpSender {
 
     private long retryInterval = 10000L;
@@ -117,18 +119,18 @@ public class SumoHttpSender {
             HttpResponse response = httpClient.execute(post);
             int statusCode = response.getStatusLine().getStatusCode();
             if (statusCode != 200) {
-                LogLog.warn(String.format("Received HTTP error from Sumo Service: %d", statusCode));
+                log.warn(String.format("Received HTTP error from Sumo Service: %d", statusCode));
                 // Not success. Only retry if status is unavailable.
                 if (statusCode == 503) {
                     throw new IOException("Server unavailable");
                 }
             }
             //need to consume the body if you want to re-use the connection.
-            LogLog.debug("Successfully sent log request to Sumo Logic");
+            log.debug("Successfully sent log request to Sumo Logic");
             EntityUtils.consume(response.getEntity());
         } catch (IOException e) {
-            LogLog.warn("Could not send log to Sumo Logic");
-            LogLog.debug("Reason:", e);
+            log.warn("Could not send log to Sumo Logic");
+            log.debug("Reason:", e);
             try {
                 post.abort();
             } catch (Exception ignore) {

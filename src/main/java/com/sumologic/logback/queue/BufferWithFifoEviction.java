@@ -26,9 +26,9 @@
 package com.sumologic.logback.queue;
 
 
-import com.sumologic.logback.LogLog;
-
 import java.util.Collection;
+
+import lombok.extern.slf4j.Slf4j;
 
 import static com.sumologic.logback.queue.CostBoundedConcurrentQueue.CostAssigner;
 
@@ -40,6 +40,7 @@ import static com.sumologic.logback.queue.CostBoundedConcurrentQueue.CostAssigne
  * Date: 4/6/13
  * Time: 3:29 PM
  */
+@Slf4j
 public class BufferWithFifoEviction<T> extends BufferWithEviction<T> {
     private CostBoundedConcurrentQueue<T> queue;
     private CostAssigner<T> costAssigner;
@@ -83,7 +84,7 @@ public class BufferWithFifoEviction<T> extends BufferWithEviction<T> {
         } while (queue.cost() > targetCost);
 
         if (numEvicted > 0) {
-            LogLog.warn("Evicted " + numEvicted + " messages from buffer");
+            log.warn("Evicted " + numEvicted + " messages from buffer");
         }
 
         return true;
