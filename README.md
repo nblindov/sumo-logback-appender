@@ -10,7 +10,7 @@ A logback appender that sends logs in json format straight to Sumo Logic.
         <dependency>
             <groupId>logging.sumo-logback-appender</groupId>
             <artifactId>sumo-logback-appender</artifactId>
-            <version>1.1.3-SNAPSHOT</version>
+            <version>1.1.0-SNAPSHOT</version>
         </dependency>
         
 2. Add the following logback-spring.xml to your application:
