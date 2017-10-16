@@ -2,12 +2,18 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>sumo-logback-appender</groupId>
+    <groupId>com.github.wmifsud.sumo</groupId>
     <artifactId>sumo-logback-appender</artifactId>
-    <version>1.0.3-SNAPSHOT</version>
+    <version>1.1.0-SNAPSHOT</version>
 
     <properties>
+        <java.version>1.8</java.version>
+        <junit.version>4.12</junit.version>
+        <lombok.version>1.16.6</lombok.version>
+        <http-client.version>4.4.1</http-client.version>
+        <logback-classic.version>1.1.3</logback-classic.version>
         <logback-jackson.version>0.1.5</logback-jackson.version>
+        <maven-source-plugin.version>2.4</maven-source-plugin.version>
     </properties>
 
     <build>
@@ -16,15 +22,15 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <configuration>
-                    <source>1.8</source>
-                    <target>1.8</target>
+                    <source>${java.version}</source>
+                    <target>${java.version}</target>
                     <verbose>true</verbose>
                 </configuration>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-source-plugin</artifactId>
-                <version>2.4</version>
+                <version>${maven-source-plugin.version}</version>
                 <executions>
                     <execution>
                         <id>attach-sources</id>
@@ -34,77 +40,64 @@
                     </execution>
                 </executions>
             </plugin>
-            <plugin>
-                <groupId>com.mycila.maven-license-plugin</groupId>
-                <artifactId>maven-license-plugin</artifactId>
-                <configuration>
-                    <basedir>${basedir}</basedir>
-                    <header>${basedir}/src/etc/header.txt</header>
-                    <quiet>false</quiet>
-                    <failIfMissing>true</failIfMissing>
-                    <aggregate>false</aggregate>
-                    <includes>
-                        <include>src/**</include>
-                        <include>**/test/**</include>
-                    </includes>
-                    <excludes>
-                        <exclude>target/**</exclude>
-                        <exclude>.clover/**</exclude>
-                    </excludes>
-                    <useDefaultExcludes>true</useDefaultExcludes>
-                    <useDefaultMapping>true</useDefaultMapping>
-                    <properties>
-                        <year>${project.inceptionYear}</year>
-                        <email>opensource@sumologic.com</email>
-                    </properties>
-                    <encoding>UTF-8</encoding>
-                </configuration>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>check</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
+            <!--<plugin>-->
+                <!--<groupId>com.mycila.maven-license-plugin</groupId>-->
+                <!--<artifactId>maven-license-plugin</artifactId>-->
+                <!--<configuration>-->
+                    <!--<basedir>${basedir}</basedir>-->
+                    <!--<header>${basedir}/src/etc/header.txt</header>-->
+                    <!--<quiet>false</quiet>-->
+                    <!--<failIfMissing>true</failIfMissing>-->
+                    <!--<aggregate>false</aggregate>-->
+                    <!--<includes>-->
+                        <!--<include>src/**</include>-->
+                        <!--<include>**/test/**</include>-->
+                    <!--</includes>-->
+                    <!--<excludes>-->
+                        <!--<exclude>target/**</exclude>-->
+                        <!--<exclude>.clover/**</exclude>-->
+                    <!--</excludes>-->
+                    <!--<useDefaultExcludes>true</useDefaultExcludes>-->
+                    <!--<useDefaultMapping>true</useDefaultMapping>-->
+                    <!--<properties>-->
+                        <!--<year>${project.inceptionYear}</year>-->
+                        <!--<email>opensource@sumologic.com</email>-->
+                    <!--</properties>-->
+                    <!--<encoding>UTF-8</encoding>-->
+                <!--</configuration>-->
+                <!--<executions>-->
+                    <!--<execution>-->
+                        <!--<goals>-->
+                            <!--<goal>check</goal>-->
+                        <!--</goals>-->
+                    <!--</execution>-->
+                <!--</executions>-->
+            <!--</plugin>-->
         </plugins>
     </build>
-
-    <distributionManagement>
-        <snapshotRepository>
-            <id>sumo-snapshots</id>
-            <name>Sumo Snapshots</name>
-            <url>https://nexus.kumoroku.com/nexus/content/repositories/sumo-snapshots/</url>
-        </snapshotRepository>
-        <repository>
-            <id>sumo-releases</id>
-            <name>Sumo Snapshots</name>
-            <url>https://nexus.kumoroku.com/nexus/content/repositories/sumo-releases/</url>
-        </repository>
-    </distributionManagement>
 
     <dependencies>
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
-            <version>1.16.6</version>
+            <version>${lombok.version}</version>
             <scope>provided</scope>
             <!-- only needed at build time -->
         </dependency>
         <dependency>
             <groupId>org.apache.httpcomponents</groupId>
             <artifactId>httpclient</artifactId>
-            <version>4.4.1</version>
+            <version>${http-client.version}</version>
         </dependency>
         <dependency>
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-classic</artifactId>
-            <version>1.1.3</version>
+            <version>${logback-classic.version}</version>
         </dependency>
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
-            <version>4.12</version>
+            <version>${junit.version}</version>
         </dependency>
         <!-- required to output logs in JSON format -->
         <dependency>
@@ -118,6 +111,4 @@
             <version>${logback-jackson.version}</version>
         </dependency>
     </dependencies>
-
-
 </project>
