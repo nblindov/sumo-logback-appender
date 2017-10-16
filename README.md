@@ -1,7 +1,7 @@
 sumo-logback-appender
 ===================
 
-A logback appender that sends logs straight to Sumo Logic.
+A logback appender that sends logs in json format straight to Sumo Logic.
 
 **`HOW-TO-USE`**
 
