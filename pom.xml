@@ -5,14 +5,19 @@
     <groupId>sumo-logback-appender</groupId>
     <artifactId>sumo-logback-appender</artifactId>
     <version>1.0.3-SNAPSHOT</version>
+
+    <properties>
+        <logback-jackson.version>0.1.5</logback-jackson.version>
+    </properties>
+
     <build>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <configuration>
-                    <source>1.6</source>
-                    <target>1.6</target>
+                    <source>1.8</source>
+                    <target>1.8</target>
                     <verbose>true</verbose>
                 </configuration>
             </plugin>
@@ -100,6 +105,17 @@
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
             <version>4.12</version>
+        </dependency>
+        <!-- required to output logs in JSON format -->
+        <dependency>
+            <groupId>ch.qos.logback.contrib</groupId>
+            <artifactId>logback-json-classic</artifactId>
+            <version>${logback-jackson.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>ch.qos.logback.contrib</groupId>
+            <artifactId>logback-jackson</artifactId>
+            <version>${logback-jackson.version}</version>
         </dependency>
     </dependencies>
 
