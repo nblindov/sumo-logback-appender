@@ -30,6 +30,7 @@ import java.io.IOException;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.impl.conn.tsccm.ThreadSafeClientConnManager;
@@ -115,7 +116,7 @@ public class SumoHttpSender {
 
             post = new HttpPost(url);
             post.setHeader("X-Sumo-Name", name);
-            post.setEntity(new StringEntity(body, "application/json", HTTP.UTF_8));
+            post.setEntity(new StringEntity(body, ContentType.APPLICATION_JSON));
             HttpResponse response = httpClient.execute(post);
             int statusCode = response.getStatusLine().getStatusCode();
             if (statusCode != 200) {
