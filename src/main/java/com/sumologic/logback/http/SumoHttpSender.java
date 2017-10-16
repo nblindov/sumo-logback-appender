@@ -115,15 +115,15 @@ public class SumoHttpSender {
 
             post = new HttpPost(url);
             post.setHeader("X-Sumo-Name", name);
-            post.setEntity(new StringEntity(body, HTTP.PLAIN_TEXT_TYPE, HTTP.UTF_8));
+            post.setEntity(new StringEntity(body, "application/json", HTTP.UTF_8));
             HttpResponse response = httpClient.execute(post);
             int statusCode = response.getStatusLine().getStatusCode();
             if (statusCode != 200) {
-                log.warn(String.format("Received HTTP error from Sumo Service: %d", statusCode));
                 // Not success. Only retry if status is unavailable.
-                if (statusCode == 503) {
+                if (statusCode == 503 || statusCode == 429) {
                     throw new IOException("Server unavailable");
                 }
+                log.warn(String.format("Received HTTP error from Sumo Service: %d", statusCode));
             }
             //need to consume the body if you want to re-use the connection.
             log.debug("Successfully sent log request to Sumo Logic");
