@@ -8,7 +8,7 @@ A logback appender that sends logs in json format straight to Sumo Logic.
 1. Add the following dependency to your application:
 
         <dependency>
-            <groupId>logging.sumo-logback-appender</groupId>
+            <groupId>com.github.wmifsud.sumo</groupId>
             <artifactId>sumo-logback-appender</artifactId>
             <version>1.1.0-SNAPSHOT</version>
         </dependency>
