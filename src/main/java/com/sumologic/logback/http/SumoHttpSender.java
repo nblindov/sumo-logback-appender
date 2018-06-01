@@ -25,8 +25,7 @@
  */
 package com.sumologic.logback.http;
 
-import java.io.IOException;
-
+import lombok.extern.slf4j.Slf4j;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPost;
@@ -37,16 +36,21 @@ import org.apache.http.impl.conn.tsccm.ThreadSafeClientConnManager;
 import org.apache.http.params.BasicHttpParams;
 import org.apache.http.params.HttpConnectionParams;
 import org.apache.http.params.HttpParams;
-import org.apache.http.protocol.HTTP;
 import org.apache.http.util.EntityUtils;
 
-import lombok.extern.slf4j.Slf4j;
+import java.io.IOException;
 
 /**
  * @author: Jose Muniz (jose@sumologic.com)
  */
 @Slf4j
 public class SumoHttpSender {
+    private static final String SUMO_SOURCE_NAME_HEADER = "X-Sumo-Name";
+    private static final String SUMO_SOURCE_CATEGORY_HEADER = "X-Sumo-Category";
+    private static final String SUMO_SOURCE_HOST_HEADER = "X-Sumo-Host";
+    private static final String SUMO_CLIENT_HEADER = "X-Sumo-Client";
+
+    private static final String SUMO_CLIENT_HEADER_VALUE = "sumo-logback-appender";// Name to stamp for querying with _sourceName
 
     private long retryInterval = 10000L;
 
@@ -55,6 +59,9 @@ public class SumoHttpSender {
     private int socketTimeout = 60000;
     private volatile HttpClient httpClient = null;
 
+    private String sourceCategory = null;
+    private String sourceHost = null;
+    private String sourceName = null;
 
     public void setRetryInterval(long retryInterval) {
         this.retryInterval = retryInterval;
@@ -64,12 +71,24 @@ public class SumoHttpSender {
         this.url = url;
     }
 
+    public void setSourceCategory(String sourceCategory) {
+        this.sourceCategory = sourceCategory;
+    }
+
+    public void setSourceHost(String sourceHost) {
+        this.sourceHost = sourceHost;
+    }
+
     public void setConnectionTimeout(int connectionTimeout) {
         this.connectionTimeout = connectionTimeout;
     }
 
     public void setSocketTimeout(int socketTimeout) {
         this.socketTimeout = socketTimeout;
+    }
+
+    public void setSourceName(String sourceName) {
+        this.sourceName = sourceName;
     }
 
     public boolean isInitialized() {
@@ -88,15 +107,15 @@ public class SumoHttpSender {
         httpClient = null;
     }
 
-    public void send(String body, String name) {
-        keepTrying(body, name);
+    public void send(String body) {
+        keepTrying(body);
     }
 
-    private void keepTrying(String body, String name) {
+    private void keepTrying(String body) {
         boolean success = false;
         do {
             try {
-                trySend(body, name);
+                trySend(body);
                 success = true;
             } catch (Exception e) {
                 try {
@@ -108,14 +127,19 @@ public class SumoHttpSender {
         } while (!success && !Thread.currentThread().isInterrupted());
     }
 
-    private void trySend(String body, String name) throws IOException {
+    private void trySend(String body) throws IOException {
         HttpPost post = null;
         try {
             if (url == null)
                 throw new IOException("Unknown endpoint");
 
             post = new HttpPost(url);
-            post.setHeader("X-Sumo-Name", name);
+            post.setHeader(SUMO_SOURCE_NAME_HEADER, sourceName);
+            post.setHeader(SUMO_SOURCE_CATEGORY_HEADER, sourceCategory);
+            post.setHeader(SUMO_SOURCE_HOST_HEADER, sourceHost);
+            post.setHeader(SUMO_CLIENT_HEADER, SUMO_CLIENT_HEADER_VALUE);
+
+
             post.setEntity(new StringEntity(body, ContentType.APPLICATION_JSON));
             HttpResponse response = httpClient.execute(post);
             int statusCode = response.getStatusLine().getStatusCode();

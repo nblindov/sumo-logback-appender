@@ -33,9 +33,15 @@ A logback appender that sends logs in json format straight to Sumo Logic.
         
                 <springProperty scope="context" name="application_component_name" source="spring.application.name"/>
                 <springProperty name="sumo_logic_url" source="sumo.logic.url"/>
-        
+                <springProperty name="sumo_logic_category" source="sumo.logic.category"/>
+                <springProperty name="sumo_logic_host" source="sumo.logic.host"/>
+                <springProperty name="sumo_logic_source_name" source="sumo.logic.source.name"/>
+
                 <appender name="sumoLogicAppender" class="com.sumologic.logback.BufferedSumoLogicAppender">
                     <url>${sumo_logic_url}</url>
+                    <sourceCategory>${sumo_logic_category}</sourceCategory>
+                    <sourceHost>${sumo_logic_host}</sourceHost>
+                    <sourceName>${sumo_logic_source_name}</sourceName>
                     <messagesPerRequest>1</messagesPerRequest>
                     <layout class="com.sumologic.logback.json.CustomJsonLayout">
                         <includeMDC>false</includeMDC>
@@ -56,3 +62,6 @@ A logback appender that sends logs in json format straight to Sumo Logic.
 3. Add the following property to your application/bootstrap.yml file where logs will be posted to:
 
         sumo.logic.url=${your_sumo_logic_url_collector}
+        sumo.logic.category=${your_sumo_logic_category}
+        sumo.logic.host=${your_sumo_logic_host}
+        sumo.logic.source.name=${your_sumo_logic_source_name}

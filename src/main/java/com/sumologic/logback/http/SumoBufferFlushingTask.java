@@ -25,12 +25,11 @@
  */
 package com.sumologic.logback.http;
 
-import java.util.List;
-
 import com.sumologic.logback.aggregation.BufferFlushingTask;
 import com.sumologic.logback.queue.BufferWithEviction;
-
 import lombok.extern.slf4j.Slf4j;
+
+import java.util.List;
 
 /**
  * @author: Jose Muniz (jose@sumologic.com)
@@ -38,62 +37,54 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class SumoBufferFlushingTask extends BufferFlushingTask<String, String> {
 
-	private SumoHttpSender sender;
-	private long           maxFlushInterval;
-	private long           messagesPerRequest;
-	private String         name;
+    private SumoHttpSender sender;
+    private long           maxFlushInterval;
+    private long           messagesPerRequest;
 
-	public SumoBufferFlushingTask(BufferWithEviction<String> queue) {
-		super(queue);
-	}
+    public SumoBufferFlushingTask(BufferWithEviction<String> queue) {
+        super(queue);
+    }
 
-	public void setName(String name) {
-		this.name = name;
-	}
 
-	public void setSender(SumoHttpSender sender) {
-		this.sender = sender;
-	}
+    public void setSender(SumoHttpSender sender) {
+        this.sender = sender;
+    }
 
-	public void setMessagesPerRequest(long messagesPerRequest) {
-		this.messagesPerRequest = messagesPerRequest;
-	}
+    public void setMessagesPerRequest(long messagesPerRequest) {
+        this.messagesPerRequest = messagesPerRequest;
+    }
 
-	public void setMaxFlushInterval(long maxFlushInterval) {
-		this.maxFlushInterval = maxFlushInterval;
-	}
+    public void setMaxFlushInterval(long maxFlushInterval) {
+        this.maxFlushInterval = maxFlushInterval;
+    }
 
-	@Override
-	protected long getMaxFlushInterval() {
-		return maxFlushInterval;
-	}
+    @Override
+    protected long getMaxFlushInterval() {
+        return maxFlushInterval;
+    }
 
-	@Override
-	protected long getMessagesPerRequest() {
-		return messagesPerRequest;
-	}
+    @Override
+    protected long getMessagesPerRequest() {
+        return messagesPerRequest;
+    }
 
-	@Override
-	protected String getName() {
-		return name;
-	}
 
-	@Override
-	protected String aggregate(List<String> messages) {
-		StringBuilder builder = new StringBuilder(messages.size() * 10);
-		for (String message : messages) {
-			builder.append(message);
-		}
-		return builder.toString();
-	}
+    @Override
+    protected String aggregate(List<String> messages) {
+        StringBuilder builder = new StringBuilder(messages.size() * 10);
+        for (String message : messages) {
+            builder.append(message);
+        }
+        return builder.toString();
+    }
 
-	@Override
-	protected void sendOut(String body, String name) {
-		if (sender.isInitialized()) {
-			sender.send(body, name);
-		} else {
-			log.error("HTTPSender is not initialized");
+    @Override
+    protected void sendOut(String body) {
+        if (sender.isInitialized()) {
+            sender.send(body);
+        } else {
+            log.error("HTTPSender is not initialized");
 
-		}
-	}
+        }
+    }
 }

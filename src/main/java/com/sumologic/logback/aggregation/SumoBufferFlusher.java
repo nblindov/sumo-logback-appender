@@ -45,7 +45,6 @@ public class SumoBufferFlusher {
             long flushingAccuracy,
             long messagesPerRequest,
             long maxFlushInterval,
-            String sourceName,
             SumoHttpSender sender,
             BufferWithEviction<String> buffer) {
 
@@ -55,7 +54,6 @@ public class SumoBufferFlusher {
 
         flushingTask.setMessagesPerRequest(messagesPerRequest);
         flushingTask.setMaxFlushInterval(maxFlushInterval);
-        flushingTask.setName(sourceName);
         flushingTask.setSender(sender);
     }
 
@@ -63,20 +61,20 @@ public class SumoBufferFlusher {
         /* Start flushing! */
 
         executor =
-            Executors.newSingleThreadScheduledExecutor(new ThreadFactory() {
-                @Override
-                public Thread newThread(Runnable r) {
-                    Thread thread = new Thread(r);
-                    thread.setName("SumoBufferFlusherThread");
-                    thread.setDaemon(true);
-                    return thread;
-                }
-            });
+                Executors.newSingleThreadScheduledExecutor(new ThreadFactory() {
+                    @Override
+                    public Thread newThread(Runnable r) {
+                        Thread thread = new Thread(r);
+                        thread.setName("SumoBufferFlusherThread");
+                        thread.setDaemon(true);
+                        return thread;
+                    }
+                });
 
 
         future =
-            executor.
-                scheduleAtFixedRate(flushingTask, 0, flushingAccuracy, TimeUnit.MILLISECONDS);
+                executor.
+                        scheduleAtFixedRate(flushingTask, 0, flushingAccuracy, TimeUnit.MILLISECONDS);
 
     }
 

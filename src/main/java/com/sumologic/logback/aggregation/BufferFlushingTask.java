@@ -25,12 +25,11 @@
  */
 package com.sumologic.logback.aggregation;
 
+import com.sumologic.logback.queue.BufferWithEviction;
+import lombok.extern.slf4j.Slf4j;
+
 import java.util.ArrayList;
 import java.util.List;
-
-import com.sumologic.logback.queue.BufferWithEviction;
-
-import lombok.extern.slf4j.Slf4j;
 
 /**
  * Task to perform a single flushing check
@@ -40,63 +39,61 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public abstract class BufferFlushingTask<In, Out> implements Runnable {
 
-	private long timeOfLastFlush = System.currentTimeMillis();
-	private BufferWithEviction<In> messageQueue;
+    private long timeOfLastFlush = System.currentTimeMillis();
+    private BufferWithEviction<In> messageQueue;
 
-	private boolean needsFlushing() {
-		long currentTime = System.currentTimeMillis();
-		long dateOfNextFlush = timeOfLastFlush + getMaxFlushInterval();
+    private boolean needsFlushing() {
+        long currentTime = System.currentTimeMillis();
+        long dateOfNextFlush = timeOfLastFlush + getMaxFlushInterval();
 
-		return (messageQueue.size() >= getMessagesPerRequest()) ||
-				(currentTime >= dateOfNextFlush);
-	}
+        return (messageQueue.size() >= getMessagesPerRequest()) ||
+                (currentTime >= dateOfNextFlush);
+    }
 
-	private void flushAndSend() {
-		List<In> messages = new ArrayList<In>(messageQueue.size());
-		messageQueue.drainTo(messages);
+    private void flushAndSend() {
+        List<In> messages = new ArrayList<In>(messageQueue.size());
+        messageQueue.drainTo(messages);
 
-		if (messages.size() > 0) {
-			log.debug(String.format("%s - Flushing and sending out %d messages (%d messages left)",
-					new java.util.Date(),
-					messages.size(),
-					messageQueue.size()));
-			Out body = aggregate(messages);
-			sendOut(body, getName());
-		}
-	}
+        if (messages.size() > 0) {
+            log.debug(String.format("%s - Flushing and sending out %d messages (%d messages left)",
+                    new java.util.Date(),
+                    messages.size(),
+                    messageQueue.size()));
+            Out body = aggregate(messages);
+            sendOut(body);
+        }
+    }
 
 
     /* Subclasses should define from here */
 
-	abstract protected long getMaxFlushInterval();
+    abstract protected long getMaxFlushInterval();
 
-	abstract protected long getMessagesPerRequest();
+    abstract protected long getMessagesPerRequest();
 
-	abstract protected String getName();
+    protected BufferFlushingTask(BufferWithEviction<In> messageQueue) {
+        this.messageQueue = messageQueue;
+    }
 
-	protected BufferFlushingTask(BufferWithEviction<In> messageQueue) {
-		this.messageQueue = messageQueue;
-	}
+    // Given the list of messages, aggregate them into a single Out object
+    abstract protected Out aggregate(List<In> messages);
 
-	// Given the list of messages, aggregate them into a single Out object
-	abstract protected Out aggregate(List<In> messages);
-
-	// Send aggregated message out. Block until we've successfully sent it.
-	abstract protected void sendOut(Out body, String name);
+    // Send aggregated message out. Block until we've successfully sent it.
+    abstract protected void sendOut(Out body);
 
 
 
     /* Public interface */
 
-	@Override
-	public void run() {
-		if (needsFlushing()) {
-			try {
-				flushAndSend();
-			} catch (Exception e) {
-				log.warn("Exception while attempting to flush and send", e);
-			}
-		}
-	}
+    @Override
+    public void run() {
+        if (needsFlushing()) {
+            try {
+                flushAndSend();
+            } catch (Exception e) {
+                log.warn("Exception while attempting to flush and send", e);
+            }
+        }
+    }
 
 }

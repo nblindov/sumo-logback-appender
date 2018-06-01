@@ -57,13 +57,17 @@ public class BufferedSumoLogicAppender extends AppenderBase<ILoggingEvent> {
     private long messagesPerRequest = 100;    // How many messages need to be in the queue before we flush
     private long maxFlushInterval = 10000;    // Maximum interval between flushes (ms)
     private long flushingAccuracy = 250;      // How often the flushed thread looks into the message queue (ms)
-    private String sourceName = "sumo-logback-appender"; // Name to stamp for querying with _sourceName
 
     private long maxQueueSizeBytes = 1000000;
 
     private SumoHttpSender sender;
     private SumoBufferFlusher flusher;
     volatile private BufferWithEviction<String> queue;
+
+
+    private String sourceCategory;
+    private String sourceHost;
+    private String sourceName;
 
     /* All the parameters */
 
@@ -104,6 +108,14 @@ public class BufferedSumoLogicAppender extends AppenderBase<ILoggingEvent> {
         this.retryInterval = retryInterval;
     }
 
+    public void setSourceCategory(String sourceCategory) {
+        this.sourceCategory = sourceCategory;
+    }
+
+    public void setSourceHost(String sourceHost) {
+        this.sourceHost = sourceHost;
+    }
+
     @Override
     public void start() {
         super.start();
@@ -112,12 +124,12 @@ public class BufferedSumoLogicAppender extends AppenderBase<ILoggingEvent> {
         /* Initialize queue */
         if (queue == null) {
             queue = new BufferWithFifoEviction<String>(maxQueueSizeBytes, new CostAssigner<String>() {
-              @Override
-              public long cost(String e) {
-                  // Note: This is only an estimate for total byte usage, since in UTF-8 encoding,
-                  // the size of one character may be > 1 byte.
-                 return e.length();
-              }
+                @Override
+                public long cost(String e) {
+                    // Note: This is only an estimate for total byte usage, since in UTF-8 encoding,
+                    // the size of one character may be > 1 byte.
+                    return e.length();
+                }
             });
         } else {
             queue.setCapacity(maxQueueSizeBytes);
@@ -130,6 +142,9 @@ public class BufferedSumoLogicAppender extends AppenderBase<ILoggingEvent> {
         sender.setRetryInterval(retryInterval);
         sender.setConnectionTimeout(connectionTimeout);
         sender.setSocketTimeout(socketTimeout);
+        sender.setSourceCategory(sourceCategory);
+        sender.setSourceHost(sourceHost);
+        sender.setSourceName(sourceName);
         sender.setUrl(url);
 
         sender.init();
@@ -139,11 +154,10 @@ public class BufferedSumoLogicAppender extends AppenderBase<ILoggingEvent> {
             flusher.stop();
 
         flusher = new SumoBufferFlusher(flushingAccuracy,
-                    messagesPerRequest,
-                    maxFlushInterval,
-                    sourceName,
-                    sender,
-                    queue);
+                messagesPerRequest,
+                maxFlushInterval,
+                sender,
+                queue);
         flusher.start();
 
     }

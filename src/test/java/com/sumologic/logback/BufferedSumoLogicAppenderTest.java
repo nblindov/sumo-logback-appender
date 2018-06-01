@@ -65,6 +65,9 @@ public class BufferedSumoLogicAppenderTest {
         appender.setMessagesPerRequest(batchSize);
         appender.setMaxFlushInterval(windowSize);
         appender.setFlushingAccuracy(precision);
+        appender.setSourceCategory("TestCategory");
+        appender.setSourceName("Test Application");
+        appender.setSourceHost("10.128.10.1");
 
         LoggerContext context = (LoggerContext) LoggerFactory.getILoggerFactory();
 
@@ -161,8 +164,11 @@ public class BufferedSumoLogicAppenderTest {
         assertEquals(2, handler.getExchanges().size());
         MaterializedHttpRequest request1 = handler.getExchanges().get(0);
         MaterializedHttpRequest request2 = handler.getExchanges().get(1);
+        assertEquals("Test Application", request1.getHeaders().get("X-sumo-name").get(0));
+        assertEquals("TestCategory", request1.getHeaders().get("X-sumo-category").get(0));
+        assertEquals("10.128.10.1", request1.getHeaders().get("X-sumo-host").get(0));
+        assertEquals("sumo-logback-appender", request1.getHeaders().get("X-sumo-client").get(0));
         System.out.println(request1.getBody());
-
     }
 
 
